@@ -10,7 +10,7 @@ from sklearn.metrics import f1_score
 
 def parse_args():
     args = argparse.ArgumentParser()
-    args.add_argument("--dataset_path", type = str, help = "Path to evaluation dataset.", default = "../data/HateSpeechDatasetBalanced.csv")
+    args.add_argument("--dataset_path", type = str, help = "Path to evaluation dataset.", default = "../data/HateSpeechDatasetBalanced_test.csv")
     args.add_argument("--predictions_path", type = str, help = "Path to model predictions file.", default = "../results/all-distilroberta-v1.npy")
     args.add_argument("--missclassified_sentences_limit", type = int, help = "Limit the number of missclassified sentences in the output.", default = 200)
     return args.parse_args()
