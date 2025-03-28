@@ -4,6 +4,7 @@ import argparse
 import pandas as pd
 import os
 import tqdm
+import yaml
 
 from sentence_transformers import SentenceTransformer
 from typing import List
@@ -34,9 +35,8 @@ def predict(embeddings_dir : str, model : SentenceTransformer, model_label : str
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    print("Target labels:")
-    for label in target_labels:
-        print(label)
+    print(f"Non-hate speech label: {target_labels[0]}")
+    print(f"Hate speech label: {target_labels[1]}")
 
     print("Performing predictions using precomputed sentence embeddings.")
 
@@ -69,7 +69,7 @@ def parse_args():
     predict_parser = subparsers.add_parser("predict", help = "Use computed embeddings to make predictions.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     predict_parser.add_argument("--model_url", type = str, help = "Specify HuggingFace SentenceTransformer model URL, for example: sentence-transformers/all-distilroberta-v1", default = "sentence-transformers/all-distilroberta-v1")
     predict_parser.add_argument("--embeddings_dir", type = str, default = "../data/sts_embeddings/all-distilroberta-v1", help = "Override path to embeddings file optionally.")
-    predict_parser.add_argument("--target_labels_path", type = str, help = "File that contains target labels. Assumption is that each label is seperated by a new line.", default = "../data/target_labels.txt")
+    predict_parser.add_argument("--target_labels_path", type = str, help = "File that contains target labels. Assumption is that each label is seperated by a new line.", default = "../data/sts_target_labels.yaml")
     predict_parser.add_argument("--output_dir", type = str, default = "../results", help = "Override output directory optionally.")
 
     return parser.parse_args()
@@ -90,6 +90,7 @@ if __name__ == "__main__":
     
     if args.command == "predict":
         with open(args.target_labels_path, "r") as f:
-            target_labels = f.read().split("\n")
+            labels_data = yaml.safe_load(f)
+            target_labels = [labels_data["non_hate_speech_label"], labels_data["hate_speech_label"]]
 
         predict(args.embeddings_dir, model, model_label, target_labels, output_dir)

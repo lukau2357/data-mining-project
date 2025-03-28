@@ -2,3 +2,5 @@ venv/
 data/*
 scripts/*.json
 results/*
+encoder_checkpoints/*
+secrets.yaml

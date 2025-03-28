@@ -1,10 +1,29 @@
+## Dataset properties
+* HateSpeechDataset.csv - 417561 sentences, 0.82 of them are non-hateful, 0.18 are hateful
+* HateSpeechDatasetBalanced.csv - 700000 sentences, near equal class distribution achieved with data augmentation. First, non-hateful sentences were undersampled. Afterwards, hateful sentences were augmented using BERT masking and Word2Vec synonym augmentation.
+
 ## STS Zero shot classification
-For distilroberta-v1, depending on the prompts used, following results were obtained:
+For distilroberta-v1, depending on the prompts used, following results were obtained, on HateSpeechDatasetBalanced_test:
 * **This is not hateful speech.**, **This is hateful speech.** - 0.64 F1
 * **This is not hateful and non toxic content**, **This is hateful and toxic content** - 0.71 F1
 * **Friendly, pleasantry, civility, gesture, levity.**, **Hatred, profanity, racial slurs.** - 0.63 F1
 
+For sentence-transformers/all-mpnet-base-v2:
+* **This is not hateful speech.**, **This is hateful speech.** - 0.56 F1
+* **This is not hateful and non toxic content**, **This is hateful and toxic content** - 0.64 F1
+* **Friendly, pleasantry, civility, gesture, levity.**, **Hatred, profanity, racial slurs.** - 0.64 F1
+
+Results are decent considering no training was performed, but in order to improve, fine-tuned models will need to be produced. Potentially, try fine-tuning sentence transformer models as well.
+
+With HateSpeechDataset, which is the original non-augmented dataset, we get significantly worse results - for mpnet and distilroberta F1 is in range 0.3 - 0.4, which is very underwhelming. **Investigate what is causing this!**
+
 We can see that "prompts" significantlly impact the performance of classification.
+
+## Encoder-only models
+roberta-base 125M parameters
+roberta-large 355M parameters
+
+roberta-X tokenizer seems to be cased, which is what we want for our problem!
 
 - Posluziti se nekim od datasetova za Hate Speech detection na Engleskom. Za to koristiti RoBERT-a, ili neki drugi slican encoder-based model za Engleski.
   Eksperimentisati i sa encoder-decoder arhitekturama. Moguce je naravno i koriscenje decoder-only modela, BART?

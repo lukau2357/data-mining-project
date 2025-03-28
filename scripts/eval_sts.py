@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     df = pd.read_csv(dataset_path)
     sentence_limit = missclassified_sentences_limit
-
+    
     true = df["Label"].to_numpy()
     results = np.load(predictions_path)
 
