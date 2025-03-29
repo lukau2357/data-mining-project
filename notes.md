@@ -33,3 +33,5 @@ roberta-X tokenizer seems to be cased, which is what we want for our problem!
     - https://www.clarin.si/repository/xmlui/handle/11356/1433
 
 - Sentences are of fairly low quality due to data augmentation, and furthermore it seems that the dataset contains multiple languages. Maybe use a multi-lingual model here?
+
+- Tokenizing input when creating batches costs arround 25 milliseconds for batch size of 128. I don't think it's worth the effort to pre-tokenize the entire dataset.
