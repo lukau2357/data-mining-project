@@ -4,7 +4,6 @@ import pandas as pd
 import os
 import yaml
 import numpy as np
-import torch_xla.core.xla_model as xm
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, TrainingArguments, Trainer
 from torch.utils.data import Dataset
@@ -13,14 +12,7 @@ from peft import LoraConfig, get_peft_model
 from sklearn.metrics import f1_score
 from functools import partial
 
-if "COLAB_TPU_ADDR" in os.environ or "XRT_TPU_CONFIG" in os.environ:
-    DEVICE = xm.xla_device() 
-
-elif torch.cuda.is_available():
-    DEVICE = torch.device("cuda")
-
-else:
-    DEVICE = torch.device("cpu")
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "secrets.yaml"), "r") as f:
    data = yaml.safe_load(f)
