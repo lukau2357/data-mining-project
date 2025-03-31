@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import yaml
 import numpy as np
+import torch_xla.core.xla_model as xm
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, TrainingArguments, Trainer
 from torch.utils.data import Dataset
@@ -12,9 +13,16 @@ from peft import LoraConfig, get_peft_model
 from sklearn.metrics import f1_score
 from functools import partial
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+if "COLAB_TPU_ADDR" in os.environ or "XRT_TPU_CONFIG" in os.environ:
+    DEVICE = xm.xla_device() 
 
-with open("../secrets.yaml", "r") as f:
+elif torch.cuda.is_available():
+    DEVICE = torch.device("cuda")
+
+else:
+    DEVICE = torch.device("cpu")
+
+with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "secrets.yaml"), "r") as f:
    data = yaml.safe_load(f)
    os.environ["HF_TOKEN"] = data["hf_token"]
 
@@ -75,10 +83,13 @@ def parse_args():
     split_parser.add_argument("--grad_accum", type = int, help = "Number of gradient accumulation steps during training, making the effective batch size grad_accum * batch_size", default = 4)
     split_parser.add_argument("--lora_rank", type = int, help = "Which LoRA rank to use for training.", default = 8)
     split_parser.add_argument("--checkpoint_dir", type = str, help = "Directory that will contain the model checkpoint, or specifies the directory that continues model checkpoint to continue training.", default = "../encoder_checkpoints/roberta_test")
-    split_parser.add_argument("--from_checkpoint", type = bool, default = False, nargs = "?", const = True, help = "Continue training from latest checkpoint.")
+    split_parser.add_argument("--from_checkpoint", type = bool, default = None, nargs = "?", const = True, help = "Continue training from latest checkpoint in the given checkpoint directory.")
     split_parser.add_argument("--train_epochs", type = int, help = "Number of model training epochs.", default = 2)
     split_parser.add_argument("--warmup_ratio", type = float, help = "Warmup ratio for learning rate scheduler.", default = 0.1)
     split_parser.add_argument("--data_ratio", type = float, help = "Ratio of data to take for trainig, mainly used for testing purposes.", default = 1)
+    split_parser.add_argument("--disable_tqdm", type = bool, default = False, nargs = "?", const = True, help = "Disables TQDM progress bars, they are problematic when run from Jupyter notebook it seems.")
+    split_parser.add_argument("--tpu_num_cores", type = int, default = None, help = "Number of TPU cores to use when training with TPU.")
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -110,7 +121,7 @@ if __name__ == "__main__":
         # Try without lora biases.
         bias = "none",
         lora_alpha = args.lora_alpha,
-        task_type = "SEQ_CLS" 
+        task_type = "SEQ_CLS"
     )
     
     model = get_peft_model(model, lora_config)
@@ -122,14 +133,13 @@ if __name__ == "__main__":
 
     # Cosine learning rate scheduling with linear warmup
     # Documentation: https://huggingface.co/docs/transformers/en/main_classes/optimizer_schedules#transformers.get_cosine_schedule_with_warmup
-
     trainer_args = TrainingArguments(
         output_dir = args.checkpoint_dir,
         overwrite_output_dir = True,
         fp16 = False,
         report_to = "none",
         gradient_accumulation_steps = args.grad_accum,
-        per_device_train_batch_size = args.batch_size // args.grad_accum,
+        per_device_train_batch_size = args.batch_size,
         seed = args.seed,
         data_seed = args.seed,
         # defaults to 5e-5
@@ -149,9 +159,10 @@ if __name__ == "__main__":
         metric_for_best_model = "eval_f1",
         lr_scheduler_type = "cosine",
         warmup_ratio = args.warmup_ratio,
-        resume_from_checkpoint = True,
         log_level = "info",
-        ddp_find_unused_parameters = False # Fixes Kaggle warning, prevents one additional forward pass for the model.
+        disable_tqdm = args.disable_tqdm,
+        ddp_find_unused_parameters = False, # Fixes Kaggle warning, prevents one additional forward pass for the model.
+        tpu_num_cores = args.tpu_num_cores
     )
 
     trainer = Trainer(
@@ -164,4 +175,4 @@ if __name__ == "__main__":
         compute_metrics = compute_f1
     )
 
-    trainer.train()
+    trainer.train(resume_from_checkpoint = args.from_checkpoint)

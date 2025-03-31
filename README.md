@@ -8,3 +8,6 @@ Some scripts require HuggingFace API token, so create `secrets.yaml` file and ad
 # secrets.yaml
 hf_token: <your_token>
 ```
+
+# TODOS
+* Solve weights_only = False when working with checkpoints
