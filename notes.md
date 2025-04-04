@@ -34,4 +34,12 @@ roberta-X tokenizer seems to be cased, which is what we want for our problem!
 
 - Sentences are of fairly low quality due to data augmentation, and furthermore it seems that the dataset contains multiple languages. Maybe use a multi-lingual model here?
 
+## LoRA notes:
+Let's try using rank stabilised LoRA, the final lora weight is divided by sqrt(rank) instead of rank.
+RoBERTa base:
+  * First no target_modules and layers_to_transform specification was tried, defaults to applying LoRA only to keys and values.
+  * `target_modules = ["query", "key", "value", "dense"], layers_to_transform = list(range(12))` applies LoRA to all linear transformations within the model, EXCLUDING the classification head!
+
 - Tokenizing input when creating batches costs arround 25 milliseconds for batch size of 128. I don't think it's worth the effort to pre-tokenize the entire dataset.
+
+- Try working with TPUs on Kaggle, see if it speeds up the training.

@@ -68,7 +68,7 @@ def parse_args():
     split_parser.add_argument("--model_url", type = str, help = "HuggingFace URL of the desired base model.", default = "roberta-base")
     split_parser.add_argument("--classifier_dropout", type = float, help = "Dropout for final classification head.", default = 0.1)
     split_parser.add_argument("--lora_dropout", type = float, help = "Dropout for LoRA layers.", default = 0.1)
-    split_parser.add_argument("--lora_alpha", type = float, help = "Scaling factor for lora layers, is actually computed as lora_alpha / lora_rank.", default = 16)
+    split_parser.add_argument("--lora_alpha", type = float, help = "Scaling factor for lora layers, is actually computed as lora_alpha / lora_rank.", default = 8)
     split_parser.add_argument("--learning_rate", type = float, help = "Optimizer learning rate.", default = 5e-5)
     split_parser.add_argument("--weight_decay", type = float, help = "Optimizer weight decay.", default = 1e-3)
     split_parser.add_argument("--batch_size", type = int, help = "Batch size to be used during training. In distributed enviroments, this should be interpreted as per-GPU batch size.", default = 64)
@@ -80,7 +80,7 @@ def parse_args():
     split_parser.add_argument("--warmup_ratio", type = float, help = "Warmup ratio for learning rate scheduler.", default = 0.1)
     split_parser.add_argument("--data_ratio", type = float, help = "Ratio of data to take for trainig, mainly used for testing purposes.", default = 1)
     split_parser.add_argument("--disable_tqdm", type = bool, default = False, nargs = "?", const = True, help = "Disables TQDM progress bars, they are problematic when run from Jupyter notebook it seems.")
-    split_parser.add_argument("--tpu_num_cores", type = int, default = None, help = "Number of TPU cores to use when training with TPU.")
+    # split_parser.add_argument("--tpu_num_cores", type = int, default = None, help = "Number of TPU cores to use when training with TPU.")
 
     return parser.parse_args()
 
@@ -113,12 +113,15 @@ if __name__ == "__main__":
         # Try without lora biases.
         bias = "none",
         lora_alpha = args.lora_alpha,
-        task_type = "SEQ_CLS"
+        task_type = "SEQ_CLS",
+        # Which layers are affected by LoRA, should be modified depending on the chosen model!
+        target_modules = ["query", "key", "value", "dense"],
+        layers_to_transform = list(range(12)),
+        use_rslora = True
     )
     
     model = get_peft_model(model, lora_config)
     lora_trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
-
     print(f"Number of model trainable parameters: {trainable_model_params}")
     print(f"Number of LoRA trainable parameters: {lora_trainable_parameters}")
     print(f"Conservation ratio: {trainable_model_params / lora_trainable_parameters:.4f}")
