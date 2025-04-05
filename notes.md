@@ -43,3 +43,7 @@ RoBERTa base:
 - Tokenizing input when creating batches costs arround 25 milliseconds for batch size of 128. I don't think it's worth the effort to pre-tokenize the entire dataset.
 
 - Try working with TPUs on Kaggle, see if it speeds up the training.
+
+124647170 - Number of RoBERTa-base parameters
+247577856 - Number of T5 v1.1-base parameters. Roughly 2 times higher than RoBERTa, which is expected. To compensate, use lower LoRA rank for T5 fine tunning
+to truly compare these models.

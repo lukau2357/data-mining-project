@@ -36,7 +36,7 @@ def collate_fn(batch : List[str], tokenizer : AutoTokenizer):
 def compute_f1(pred):
     labels = pred.label_ids
     preds = np.argmax(pred.predictions, axis = -1)
-    f1 = f1_score(labels, preds, average='weighted')
+    f1 = f1_score(labels, preds, average = "weighted")
 
     return {
         "eval_f1": f1
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         log_level = "info",
         disable_tqdm = args.disable_tqdm,
         ddp_find_unused_parameters = False, # Fixes Kaggle warning, prevents one additional forward pass for the model.
-        tpu_num_cores = args.tpu_num_cores
+        # tpu_num_cores = args.tpu_num_cores
     )
 
     trainer = Trainer(
