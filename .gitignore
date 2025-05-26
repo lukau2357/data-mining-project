@@ -3,4 +3,9 @@ data/*
 scripts/*.json
 results/*
 encoder_checkpoints/*
+encoder_decoder_checkpoints
 secrets.yaml
+.ipynb_checkpoints/*
+*.db
+trainer_output
+roberta-hpo_best_params.json

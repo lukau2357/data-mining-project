@@ -45,9 +45,9 @@ RoBERTa base:
 - Try working with TPUs on Kaggle, see if it speeds up the training.
 
 124647170 - Number of RoBERTa-base parameters
-247577856 - Number of T5 v1.1-base parameters. Roughly 2 times higher than RoBERTa, which is expected. To compensate, use lower LoRA rank for T5 fine tunning
+247577856 - Number of FLAN T5 base parameters. Roughly 2 times higher than RoBERTa, which is expected. To compensate, use lower LoRA rank for T5 fine tunning
 to truly compare these models.
 
-alllora model of rank 8 (currently best with 0.9 F1) has 1919234 parameters (counting only LoRA parameters), while the original model has 124647170, which is roughly 65 times less. Training time: 26 hours.
+roberta_base_alllora_r8_rslora model of rank 8 (currently best with 0.9 F1) has 1919234 parameters (counting only LoRA parameters), while the original model has 124647170, which is roughly 65 times less. Training time: 26 hours, not including evaluation.
 
-t5v1_1 small model of rank 32 has 1376256 parameters, while the original model has 76961152, which is roughly 55 times less. T5 models take significantlly longer to train, due to label generation! Training time: 64 hours if let for 8 epochs, which is way too long for current hardware.
+flan_t5_base_r18_e8 is lora rank 18, has 1990656 parameters (counting only LoRA trainable parameters), while the original model has 247577856, roughly 124 times less. We affected different layers for roberta and T5 models, hence the rank discrepancy, but we aimed so that the resulting number of parameters is roughly the same, and we can see that we have 1.9M for both models. Training time: 43 hours (including evaluation).
