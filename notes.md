@@ -51,3 +51,15 @@ to truly compare these models.
 roberta_base_alllora_r8_rslora model of rank 8 (currently best with 0.9 F1) has 1919234 parameters (counting only LoRA parameters), while the original model has 124647170, which is roughly 65 times less. Training time: 26 hours, not including evaluation.
 
 flan_t5_base_r18_e8 is lora rank 18, has 1990656 parameters (counting only LoRA trainable parameters), while the original model has 247577856, roughly 124 times less. We affected different layers for roberta and T5 models, hence the rank discrepancy, but we aimed so that the resulting number of parameters is roughly the same, and we can see that we have 1.9M for both models. Training time: 43 hours (including evaluation).
+
+classification_report for the final RoBERTa model:
+```
+              precision    recall  f1-score   support
+
+ Non-hateful       0.89      0.95      0.91     72319
+     Hateful       0.94      0.88      0.91     72905
+
+    accuracy                           0.91    145224
+   macro avg       0.91      0.91      0.91    145224
+weighted avg       0.91      0.91      0.91    145224
+```
